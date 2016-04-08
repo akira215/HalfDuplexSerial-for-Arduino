@@ -83,7 +83,8 @@ class hardHalfDuplexSerial : public halfDuplexSerial
 {
 private:
   HardwareSerial* _port;
-  
+  volatile uint8_t * const _ucsrb;
+
   volatile uint8_t _dirBitMask;        // Pin used to swap in transmit/receive mode
   volatile uint8_t* _dirPortRegister;  // Port of the Pin used to swap in transmit/receive mode
   bool _dirPinInitialized;
@@ -93,12 +94,10 @@ public:
   inline void _tx_complete_irq() __attribute__((__always_inline__));
   
   // public methods
-  hardHalfDuplexSerial(HardwareSerial* serial_port/*const uint8_t dirPin*/);
+  hardHalfDuplexSerial(HardwareSerial* serial_port, volatile uint8_t *ucsrb);
   void setDirPin(const uint8_t dirPin);
 
-  //void setDirPin(const uint8_t dirPin);
-  //void begin(unsigned long baud);
-  void begin(unsigned long baud, uint8_t serialConfig = SERIAL_8N1);
+  void begin(unsigned long baud);
   void end();
 
   virtual size_t write(uint8_t data);

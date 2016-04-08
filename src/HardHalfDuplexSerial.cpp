@@ -43,9 +43,9 @@ inline void hardHalfDuplexSerial::_tx_complete_irq()
 //
 // Constructor
 //
-hardHalfDuplexSerial::hardHalfDuplexSerial(HardwareSerial* serial_port) :
+hardHalfDuplexSerial::hardHalfDuplexSerial(HardwareSerial* serial_port, volatile uint8_t *ucsrb) :
   halfDuplexSerial(),
-  _port(serial_port), _dirBitMask(0),
+  _port(serial_port), _ucsrb(ucsrb), _dirBitMask(0),
  _dirPortRegister(0), _dirPinInitialized(false)
 {
 }
@@ -62,21 +62,21 @@ void hardHalfDuplexSerial::setDirPin(const uint8_t dirPin)
 }
 
 
-void hardHalfDuplexSerial::begin(unsigned long baud, uint8_t serialConfig)
+void hardHalfDuplexSerial::begin(unsigned long baud)
 {
   if(_dirPinInitialized)
   {
     halfDuplexSerial::begin(baud);
-    _port->begin(baud, serialConfig);
- 
-    sbi( UCSR1B, TXCIE0); // Setup the Tx Complete interrupt
+    _port->begin(baud);
+
+    sbi( *_ucsrb, TXCIE0); // Setup the Tx Complete interrupt
   }
 }
 
 void hardHalfDuplexSerial::end()
 {
     _port->end();
-    cbi( UCSR1B, TXCIE0);    // Clear the Tx Complete interrupt
+    cbi( *_ucsrb, TXCIE0);    // Clear the Tx Complete interrupt
 }
 
 size_t hardHalfDuplexSerial::write(uint8_t data)
@@ -117,7 +117,11 @@ size_t hardHalfDuplexSerial::write(const uint8_t* buffer,  int size)
     hdSerial._tx_complete_irq();
   }
   // Creating the instance of the class for serial0
-  hardHalfDuplexSerial hdSerial(Serial);
+  #if defined(UBRRH) && defined(UBRRL)
+  	hardHalfDuplexSerial hdSerial(Serial, &UCSRB);
+  #else
+  	hardHalfDuplexSerial hdSerial(Serial, &UCSR0B);
+  #endif
 #endif // HAVE_HWSERIAL0
 */
 
@@ -138,7 +142,7 @@ size_t hardHalfDuplexSerial::write(const uint8_t* buffer,  int size)
   }
 
   // Creating the instance of the class for serial1
-  hardHalfDuplexSerial hdSerial1(&Serial1);
+  hardHalfDuplexSerial hdSerial1(&Serial1, &UCSR1B );
 #endif // HAVE_HWSERIAL1
 
 #ifdef HAVE_HWSERIAL2
@@ -153,7 +157,7 @@ size_t hardHalfDuplexSerial::write(const uint8_t* buffer,  int size)
     hdSerial2._tx_complete_irq();
   }
   // Creating the instance of the class for serial2
-  hardHalfDuplexSerial hdSerial2(&Serial2); 
+  hardHalfDuplexSerial hdSerial2(&Serial2, &UCSR2B); 
 #endif // HAVE_HWSERIAL2
 
 #ifdef HAVE_HWSERIAL3
@@ -168,7 +172,7 @@ size_t hardHalfDuplexSerial::write(const uint8_t* buffer,  int size)
     hdSerial3._tx_complete_irq();
   }
   // Creating the instance of the class for serial3
-  hardHalfDuplexSerial hdSerial3(&Serial3);
+  hardHalfDuplexSerial hdSerial3(&Serial3, &UCSR3B);
 #endif // HAVE_HWSERIAL3
 
 
