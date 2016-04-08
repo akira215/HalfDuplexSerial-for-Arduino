@@ -1,0 +1,33 @@
+= HalfDuplexSerial Library for Arduino =
+
+ Used to communicate using UART in Half Duplex mode.
+ This library comes with two implementations:
+ - hardHalfDuplexSerial use Arduino built-in UART. A direction pin should be set up to switch between transmit & receive mode.
+ - softHalfDuplexSerial use only one pin of the Arduino Board.
+ The receiver should obviously be grouded with the Arduino board (so at least 2 wires between the receiver and the Arduino)
+ The pin should support change interrupts: 
+ - 0n the Mega and Mega 2560 only the following can be used for RX: 10, 11, 12, 13, 14, 15, 50, 51, 52, 53, A8 (62), A9 (63), A10 (64), A11 (65), A12 (66), A13 (67), A14 (68), A15 (69).
+ - On the Leonardo and Micro only the following can be used for RX: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI).
+
+ If more than one soft serial port is used, halfDuplexSerial.listen() should be called on the port to be listened before receiving data.
+
+For more information about this library please visit us at
+http://
+
+== License ==
+
+Copyright (c) Arduino LLC. All right reserved.
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
