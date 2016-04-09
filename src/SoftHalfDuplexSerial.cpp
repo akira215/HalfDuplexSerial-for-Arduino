@@ -520,7 +520,7 @@ size_t softHalfDuplexSerial::write(const uint8_t *buffer, /*size_t*/ int size)
 
  
   
-  return 1;
+  return size;
 }
 
 void softHalfDuplexSerial::flush()
