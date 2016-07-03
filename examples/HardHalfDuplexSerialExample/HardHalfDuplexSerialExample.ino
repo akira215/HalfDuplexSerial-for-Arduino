@@ -19,7 +19,11 @@ This library is free software; you can redistribute it and/or
  *****************************************************************************
  Decription:
  This is a simple code to illustrate how to use SoftHalfDuplex lib
- Hardware just require a connection on half duplex TTL device on pin 8. the device should be grounded with Arduino board.
+ Hardware just require a connection on the driver on pin 8. The device should be grounded with Arduino board.
+ On Arduino Due Board, only corresponding USART RTS pin could be used to drive the tranceiver:
+ - using hdSerial1 (Tx 18, Rx 19, Rts 2)
+ - using hdSerial2 (Tx 16, Rx 17, Rts 23)
+ - Serial3 RTS pin is not connected on Arduino Due Board
 
 For more informations, please visit :
 https://github.com/akira215/SoftHalfDuplexSerial-for-Arduino
@@ -38,7 +42,9 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   }
   
+  // The following line is not used with Arduino Due board. Only corresponding USART RTS pin is used to drive the tranceiver
   hdSerial1.setDirPin(8); // hdSerial1 is an instance created in HardHalfDuplexSerial.cpp. Pin 8 will be used to switch direction
+			
   hdSerial1.begin(57600); // Starting half Duplex communication at 57600 bps. 
   nByte = 0;
 }

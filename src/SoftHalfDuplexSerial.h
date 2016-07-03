@@ -1,26 +1,26 @@
 /*
 SoftHalfDuplexSerial.h (from SoftwareSerial lib)
  Written by Akira.
- 
+
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
- This library is distributed in the hope that it will be useful,  
+
+ This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- 
+
  *****************************************************************************
  Decription:
  Used to communicate using a software UART in Half Duplex mode, using only one pin of the Arduino Board.
  The receiver should obviously be grouded with the Arduino board (so at least 2 wires between the receiver and the Arduino)
- The pin should support change interrupts: 
+ The pin should support change interrupts:
  - 0n the Mega and Mega 2560 only the following can be used for RX: 10, 11, 12, 13, 14, 15, 50, 51, 52, 53, A8 (62), A9 (63), A10 (64), A11 (65), A12 (66), A13 (67), A14 (68), A15 (69).
  - On the Leonardo and Micro only the following can be used for RX: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI).
 
@@ -33,7 +33,7 @@ https://github.com/akira215/SoftHalfDuplexSerial-for-Arduino
 #ifndef SoftHalfDuplexSerial_h
 #define SoftHalfDuplexSerial_h
 
-
+#if !defined (__SAM3X8E__)
 #include <HalfDuplexSerial.h>
 #include <inttypes.h>
 #include <Stream.h>
@@ -68,7 +68,7 @@ private:
   //uint16_t _inverse_logic:1;
 
   // static data
-  static char _receive_buffer[_SS_MAX_RX_BUFF]; 
+  static char _receive_buffer[_SS_MAX_RX_BUFF];
   static volatile uint8_t _receive_buffer_tail;
   static volatile uint8_t _receive_buffer_head;
   static softHalfDuplexSerial *active_object;
@@ -105,7 +105,7 @@ public:
   virtual void flush();
   virtual void flushRx();
   operator bool() { return true; }
-  
+
   using Print::write;
 
   // public only for easy access by interrupt handlers
@@ -121,4 +121,5 @@ public:
 #undef abs
 #undef round
 
+#endif  // (__SAM3X8E__)
 #endif  // SoftHalfDuplexSerial_h

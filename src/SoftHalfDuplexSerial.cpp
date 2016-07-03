@@ -1,26 +1,26 @@
 /*
 SoftHalfDuplexSerial.cpp (from SoftwareSerial lib)
  Written by Akira.
- 
+
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
- This library is distributed in the hope that it will be useful,  
+
+ This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- 
+
  *****************************************************************************
  Decription:
  Used to communicate using a software UART in Half Duplex mode, using only one pin of the Arduino Board.
  The receiver should obviously be grouded with the Arduino board (so at least 2 wires between the receiver and the Arduino)
- The pin shouldsupport change interrupts: 
+ The pin shouldsupport change interrupts:
  - 0n the Mega and Mega 2560 only the following can be used for RX: 10, 11, 12, 13, 14, 15, 50, 51, 52, 53, A8 (62), A9 (63), A10 (64), A11 (65), A12 (66), A13 (67), A14 (68), A15 (69).
  - On the Leonardo and Micro only the following can be used for RX: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI).
 
@@ -30,16 +30,16 @@ For more informations, please visit :
 https://github.com/akira215/SoftHalfDuplexSerial-for-Arduino
 */
 
-
+#if !defined (__SAM3X8E__)
 // When set, _DEBUG co-opts pins 11 and 13 for debugging with an
 // oscilloscope or logic analyzer.  Beware: it also slightly modifies
 // the bit times, so don't rely on it too much at high baud rates
 #define _DEBUG 0
 #define _DEBUG_PIN1 11
 #define _DEBUG_PIN2 13
-// 
+//
 // Includes
-// 
+//
 #include <SoftHalfDuplexSerial.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
@@ -50,7 +50,7 @@ https://github.com/akira215/SoftHalfDuplexSerial-for-Arduino
 // Statics
 //
 softHalfDuplexSerial *softHalfDuplexSerial::active_object = 0;
-char softHalfDuplexSerial::_receive_buffer[_SS_MAX_RX_BUFF]; 
+char softHalfDuplexSerial::_receive_buffer[_SS_MAX_RX_BUFF];
 volatile uint8_t softHalfDuplexSerial::_receive_buffer_tail = 0;
 volatile uint8_t softHalfDuplexSerial::_receive_buffer_head = 0;
 
@@ -79,13 +79,13 @@ inline void DebugPulse(uint8_t, uint8_t) {}
 // Private methods
 //
 
-/* static */ 
-inline void softHalfDuplexSerial::tunedDelay(uint16_t delay) { 
+/* static */
+inline void softHalfDuplexSerial::tunedDelay(uint16_t delay) {
   _delay_loop_2(delay);
 }
 
 // This function sets the current object as the "listening"
-// one and returns true if it replaces another 
+// one and returns true if it replaces another
 bool softHalfDuplexSerial::listen()
 {
   if (!_rx_delay_stopbit)
@@ -139,7 +139,7 @@ void softHalfDuplexSerial::recv()
     "push r26 \n\t"
     "push r27 \n\t"
     ::);
-#endif  
+#endif
 
   uint8_t d = 0;
 
@@ -167,7 +167,7 @@ void softHalfDuplexSerial::recv()
         d |= 0x80;
     }
 
-   
+
     // if buffer full, set the overflow flag and return
     uint8_t next = (_receive_buffer_tail + 1) % _SS_MAX_RX_BUFF;
     if (next != _receive_buffer_head)
@@ -175,8 +175,8 @@ void softHalfDuplexSerial::recv()
       // save new data in buffer: tail points to where byte goes
       _receive_buffer[_receive_buffer_tail] = d; // save new byte
       _receive_buffer_tail = next;
-    } 
-    else 
+    }
+    else
     {
       DebugPulse(_DEBUG_PIN1, 1);
       _buffer_overflow = true;
@@ -248,7 +248,7 @@ ISR(PCINT3_vect, ISR_ALIASOF(PCINT0_vect));
 //
 // Constructor
 //
-softHalfDuplexSerial::softHalfDuplexSerial(const uint8_t dataPin) : 
+softHalfDuplexSerial::softHalfDuplexSerial(const uint8_t dataPin) :
  halfDuplexSerial(),
   _rx_delay_centering(0), _rx_delay_intrabit(0),
   _rx_delay_stopbit(0), _tx_delay(0),
@@ -256,13 +256,13 @@ softHalfDuplexSerial::softHalfDuplexSerial(const uint8_t dataPin) :
 {
   _dataPin = dataPin;
   setRX();  // required to pull up the UART line
-  
+
  // Initialize transmit register
  _dataBitMask = digitalPinToBitMask(_dataPin);
  uint8_t port = digitalPinToPort(_dataPin);
  _transmitPortRegister = portOutputRegister(port);
  _receivePortRegister = portInputRegister(port);
-  
+
 }
 
 //
@@ -430,10 +430,10 @@ size_t softHalfDuplexSerial::write(uint8_t b)
   uint8_t inv_mask = ~_dataBitMask;
   uint16_t delay = _tx_delay;
   uint8_t oldSREG = SREG; // save interrupt flag
- 
+
 
   cli();  // turn off interrupts for a clean txmit
-  
+
   setTX();   // Changing dataPin to transmit
 
   // Write the start bit
@@ -457,15 +457,15 @@ size_t softHalfDuplexSerial::write(uint8_t b)
   *reg |= reg_mask;
 
   setRX();   // Changing dataPin to receive again
-  
+
   SREG = oldSREG; // turn interrupts back on
-  
+
   return result;
   // return 1;
 }
 
 size_t softHalfDuplexSerial::write(const uint8_t *buffer, /*size_t*/ int size)
-{ 
+{
   if (_tx_delay == 0) {
     setWriteError();
     return 0;
@@ -481,21 +481,21 @@ size_t softHalfDuplexSerial::write(const uint8_t *buffer, /*size_t*/ int size)
   uint16_t delay = _tx_delay;
   uint8_t b;  // buffer for 1 byte
   uint8_t oldSREG = SREG; // save interrupt flag
-  
+
   cli();  // turn off interrupts for a clean txmit
 
   setTX();   // Changing dataPin to transmit
 
   for (int j = 0; j < size; j++)
   {
-     
+
     b = buffer[j]; // load 1 byte buffer
-    
+
     // Write the start bit
     *reg &= inv_mask;
 
     tunedDelay(delay);
-   
+
     // Write each of the 8 bits
     for (uint8_t i = 8; i > 0; --i)
     {
@@ -503,7 +503,7 @@ size_t softHalfDuplexSerial::write(const uint8_t *buffer, /*size_t*/ int size)
         *reg |= reg_mask; // send 1
       else
         *reg &= inv_mask; // send 0
-  
+
       tunedDelay(delay);
       b >>= 1;
     }
@@ -513,13 +513,13 @@ size_t softHalfDuplexSerial::write(const uint8_t *buffer, /*size_t*/ int size)
     tunedDelay(delay);  // this act for the stop bit
   }
 
-  
+
   setRX();   // Changing dataPin to receive again
   SREG = oldSREG; // turn interrupts back on
   // tunedDelay(_tx_delay);
 
- 
-  
+
+
   return size;
 }
 
@@ -532,7 +532,7 @@ void softHalfDuplexSerial::flushRx()
 {
   // simply reinitialize the buffer
   _receive_buffer_head = _receive_buffer_tail = 0;
-  
+
 }
 
 
@@ -549,3 +549,4 @@ int softHalfDuplexSerial::peek()
   return _receive_buffer[_receive_buffer_head];
 }
 
+#endif  // (__SAM3X8E__)
